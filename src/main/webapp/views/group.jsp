@@ -3,16 +3,38 @@
 <%@ page import="com.mywork.chatapp.Model.*" %>
 <%@ page import="java.util.*" %>
 
+<% User user =(User) request.getAttribute("user"); %>
+<% Group group =(Group) request.getAttribute("group"); %>
+
 <!DOCTYPE HTML>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>group name | ChatApp</title>
+  <title><%=group.getGroupName()%> | ChatApp</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
   <style>
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    /* Track */
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    /* Handle */
+    ::-webkit-scrollbar-thumb {
+      background: #888;
+    }
+
+    /* Handle on hover */
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
       .card-body:hover{
         box-shadow: 0 0 1px black;
       }
@@ -22,8 +44,7 @@
 <body >
 
 
-    <% User user =(User) request.getAttribute("user"); %>
-    <% Group group =(Group) request.getAttribute("group"); %>
+
 
 
 <!-- navbar -->
@@ -38,7 +59,7 @@
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">Groups</a>
+            <a class="nav-link active" aria-current="page" href="/group/<%=group.getId()%>/<%=user.getId()%>/remove">Left Group</a>
           </li>
 
         </ul>
@@ -92,8 +113,18 @@
         <% } %>
         <!-- user message -->
         <% if( message.getUser().getUserName().equals(user.getUserName())){ %>
-            <div class="bg-white w-50 p-2 mb-3" style="margin-left: auto;margin-right: 0;" >
-              <div><strong class=""><%=message.getUser().getUserName()%></strong> <small class="fw-light"><%=message.getMessageDate()%></small> </div>
+            <div class="bg-white w-50 p-2 mb-3" style="margin-left: auto;margin-right: 0;" id="<%=message.getId()%>" >
+              <div>
+                    <div>
+                        <strong class="">
+                            <%=message.getUser().getUserName()%>
+                        </strong>
+                        <span class="btn btn-danger" style="width: 10px;height: 20px; margin-left: 5%;" onclick="deleteMessage(<%= message.getId() %>)">-</span>
+                    </div>
+                    <small class="fw-light">
+                        <%=message.getMessageDate()%>
+                    </small>
+              </div>
               <div><%=message.getMessage()%></div>
             </div>
         <% } %>
@@ -152,7 +183,7 @@
 
                 var time = new Date();
                 if(res.username=="<%=user.getUserName()%>"){
-                $("#chatWindow").append("<div class='bg-white w-50 p-2 mb-3'  style='margin-left: auto;margin-right: 0;'> <div><strong>"+res.username+"</strong> <small>"+res.date+"</small> </div> <div>"+res.message+"</div> </div>");
+                $("#chatWindow").append("<div class='bg-white w-50 p-2 mb-3'  style='margin-left: auto;margin-right: 0;' id='"+res.messageId+"' > <div><strong>"+res.username+"</strong><span class='btn btn-danger' style='width: 10px;height: 20px; margin-left: 5%;' onclick='deleteMessage("+res.messageId+")'>-</span> <small>"+res.date+"</small> </div> <div>"+res.message+"</div> </div>");
 
                 $("#message").val("");
                 }else{
@@ -180,6 +211,17 @@
         client.send("/chatapp/message/${group.id}",{},JSON.stringify(message));
       }
     })
+
+
+function deleteMessage(messageId){
+    $.post("/message/delete",
+        {
+            data:messageId
+        },
+        function(){
+            $('#'+messageId).remove();
+        })
+}
 
 
 </script>

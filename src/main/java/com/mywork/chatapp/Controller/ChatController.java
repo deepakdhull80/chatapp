@@ -22,6 +22,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -79,7 +80,7 @@ public class ChatController {
         message1.setUser(user);
         message1.setGroupN(groupService.getGroup(Integer.valueOf(groupId)));
 
-        messageService.addMessage(message1);
+        Message message2= messageService.addMessage(message1);
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm");
 
@@ -87,7 +88,7 @@ public class ChatController {
         response.put("username",user.getUserName());
         response.put("message",(String)map.get("message"));
         response.put("date",simpleDateFormat.format(date));
-
+        response.put("messageId",String.valueOf(message2.getId()));
         simpMessagingTemplate.convertAndSend("/topic/"+groupId,response);
     }
 
@@ -187,6 +188,23 @@ public class ChatController {
         userService.updateUser(user);
 
         return true;
+    }
+
+
+    @GetMapping("/group/{groupId}/{userId}/remove")
+    public String removeFromGroup(@PathVariable("groupId") Integer groupId,@PathVariable("userId") Integer userId,HttpServletRequest request) throws Exception {
+
+        String uid = (String) request.getSession().getAttribute("userid");
+        if(uid ==null){
+            throw new Exception("Invalid Request");
+        }
+        if(Integer.valueOf(uid)== userId) {
+            groupService.deleteGroup(groupId,userId );
+        }else{
+            throw new Exception("User deleting authorize group");
+        }
+
+        return "redirect:/dashboard";
     }
 
 

@@ -5,6 +5,7 @@ import com.mywork.chatapp.Model.Group;
 import com.mywork.chatapp.Repository.GroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -33,9 +34,9 @@ public class GroupService {
         }
         throw new GroupNotFoundException("Group not exist :"+group.getId());
     }
-
-    public void deleteGroup(int groupId){
-        groupRepository.deleteById(groupId);
+    @Transactional
+    public void deleteGroup(int groupId,int userId){
+        groupRepository.removeUserFromGroup(groupId,userId);
     }
 
 
